@@ -25,6 +25,14 @@ void main() {
       data = new ByteArrayReader([0x80, 1, 0, 1]..addAll(UTF8.encode(totest)));
     });
 
+    test('Int8', () {
+      expect(data.readInt8(), -128);
+    });
+
+    test("Uint8", () {
+      expect(data.readUint8(), 128);
+    });
+
     test('Int32', () {
       expect(data.readInt32(), -2147418111);
     });

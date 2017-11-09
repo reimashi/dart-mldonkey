@@ -57,6 +57,16 @@ class ByteArrayReader {
     return result;
   }
 
+  /// Read a 1 byte int
+  int readInt8() {
+    Uint8List li = new Uint8List.fromList(readBytes(1));
+    ByteData bd = li.buffer.asByteData();
+    return bd.getInt8(0);
+  }
+
+  /// Read a 1 byte unsigned int
+  int readUint8() => read();
+
   /// Read a 2 bytes int
   int readInt16([Endianness endian = null]) {
     if (endian == null) endian = this.endian;
