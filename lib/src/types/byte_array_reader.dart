@@ -28,15 +28,20 @@ class ByteArrayReader {
 
   /// Set the read pointer to the [position]
   void seek(int position) {
-    // Negative positions to rewind
-    if (position < 0) {
-      position = this._position - position;
-    }
-
     if (position > this._data.length)
       this._position = this._data.length;
     else
       this._position = position;
+
+    // Negative position correction
+    if (this._position < 0) {
+      this._position = 0;
+    }
+  }
+
+  /// Skip a [offset] of bytes. Negative values rewind the pointer.
+  void skip(int offset) {
+    this.seek(this._position + offset);
   }
 
   /// Read a set of bytes of [size].
@@ -118,7 +123,7 @@ class ByteArrayReader {
 
   /// Read a string of [size]
   String readString(int size, [Encoding encoding = UTF8]) {
-    return encoding.decode(readBytes(size));
+    return encoding.decode(this.readBytes(size));
   }
 
   /// Convert the byte array to string as text. Optionally, can be converted
