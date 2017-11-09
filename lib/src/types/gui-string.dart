@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:convert';
+import 'byte_array_reader.dart';
 
 class GuiString {
   final int length;
@@ -29,8 +30,14 @@ class GuiString {
     }
 
     return new List.from(headRaw)
-      ..addAll(ASCII.encode(source));
+      ..addAll(UTF8.encode(source));
   }
 
   String toString() => this._str;
+
+  static String read(ByteArrayReader data) {
+    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
+    if (size == 0xffff) size = data.readInt32(Endianness.LITTLE_ENDIAN);
+    return data.readString(size, UTF8);
+  }
 }

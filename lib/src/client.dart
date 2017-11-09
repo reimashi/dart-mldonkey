@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:logging/logging.dart';
+import 'package:http/http.dart';
+import 'package:mldonkey/src/types/byte_array_reader.dart';
 
 import 'package:mldonkey/src/types/gui-string.dart';
 import 'package:mldonkey/src/types/gui-network-info.dart';
@@ -36,30 +38,25 @@ class Client {
   }
 
   void _handleMsg(List<int> data) {
-    _log.info("RECV <= " + _toHex(data));
+    ByteArrayReader msg = new ByteArrayReader(data, Endianness.LITTLE_ENDIAN);
+    _log.info("RECV <= " + msg.toString(hexadecimal: true));
 
-    Uint8List li = new Uint8List.fromList(data);
-    ByteData bd = li.buffer.asByteData();
-
-    int size = bd.getInt32(0, Endianness.LITTLE_ENDIAN);
-    int opcode = bd.getUint16(4, Endianness.LITTLE_ENDIAN);
+    int size = msg.readInt32();
+    int opcode = msg.readInt16();
 
     switch(opcode) {
-      case RecvOpCode.CoreProtocol: this._handleMsgCoreProtocol(li.skip(5).toList()); break;
-      case RecvOpCode.NetworkInfo: this._handleMsgNetworkInfo(li.skip(5).toList()); break;
-      default: this._handleMsgUnknown(li.skip(5).toList());
+      case RecvOpCode.CoreProtocol: this._handleMsgCoreProtocol(msg); break;
+      case RecvOpCode.NetworkInfo: this._handleMsgNetworkInfo(msg); break;
+      default: this._handleMsgUnknown(msg);
     }
   }
 
-  Future _handleMsgCoreProtocol(List<int> data) async {
-    Uint8List li = new Uint8List.fromList(data);
-    ByteData bd = li.buffer.asByteData();
+  Future _handleMsgCoreProtocol(ByteArrayReader data) async {
+    this._rProtocolVersion = data.readInt32();
 
-    this._rProtocolVersion = bd.getInt32(0, Endianness.LITTLE_ENDIAN);
-
-    if (data.length == 12) {
-      this._cMaxOpcode = bd.getInt32(4, Endianness.LITTLE_ENDIAN);
-      this._rMaxOpcode = bd.getInt32(8, Endianness.LITTLE_ENDIAN);
+    if (data.length == 20) { // Older versions
+      this._cMaxOpcode = data.readInt32();
+      this._rMaxOpcode = data.readInt32();
     }
 
     await this._sendMsgProtocolVersion();
@@ -67,12 +64,14 @@ class Client {
     await this._sendMsgGuiPassWord(this._user, this._password);
   }
 
-  Future _handleMsgNetworkInfo(List<int> data) async {
-
+  Future _handleMsgNetworkInfo(ByteArrayReader data) async {
+    int id = data.readInt32();
+    String netname = GuiString.read(data);
+    print("${id} - ${netname}");
   }
 
-  void _handleMsgUnknown(List<int> data) {
-    _log.info("[MlDonkey] Unknown message " + _toHex(data));
+  void _handleMsgUnknown(ByteArrayReader data) {
+    _log.info("[MlDonkey] Unknown message " + data.toString(hexadecimal: true));
   }
 
   Future _sendMsgProtocolVersion() async {
@@ -103,7 +102,7 @@ class Client {
 
     List<int> msg = new List.from(headRaw)..addAll(content);
 
-    _log.info("SEND => " + _toHex(msg));
+    _log.info("SEND => " + new ByteArrayReader(msg).toString(hexadecimal: true));
     this._socket.add(msg);
     return this._socket.flush();
   }
@@ -113,15 +112,5 @@ class Client {
         .then((socket) {
       return new Client._fromSocket(socket);
     });
-  }
-
-  static String _toHex(List<int> data) {
-    String hexstr = "0x";
-    String tmp;
-    for (num i = 0; i < data.length; i++) {
-      tmp = data[i].toRadixString(16);
-      hexstr += tmp.length == 1 ? "0" + tmp : tmp;
-    }
-    return hexstr;
   }
 }
