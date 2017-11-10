@@ -40,4 +40,8 @@ class GuiString {
     if (size == 0xffff) size = data.readInt32(Endianness.LITTLE_ENDIAN);
     return data.readString(size, UTF8);
   }
+
+  static double readFloat(ByteArrayReader data) {
+    return double.parse(GuiString.read(data));
+  }
 }

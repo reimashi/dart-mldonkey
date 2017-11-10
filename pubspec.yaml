@@ -9,6 +9,8 @@ environment:
 
 dependencies:
   logging: ^0.11.3
+  size_type:
+    git: https://github.com/minerhub/dart-size-type.git
 
 dev_dependencies:
   test: ^0.12.0

@@ -8,5 +8,14 @@ main() async {
   });
 
   Client pc = await Client.connect("vega", 4001);
+
+  pc.onStatsUpdate.listen((stats) {
+    print("Stats: ${stats.downloadRate / 1024} - ${stats.uploadRate / 1024} kbps");
+  });
+
+  pc.onNetworkInfoUpdate.listen((netInfo) {
+    print("Red: ${netInfo.name}\t\t${netInfo.downloaded} - ${netInfo.uploaded}");
+  });
+
   print("Connected");
 }
