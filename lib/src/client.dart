@@ -9,10 +9,15 @@ import 'package:mldonkey/src/types/byte_array_reader.dart';
 import 'package:mldonkey/src/states/network-info.dart';
 import 'package:mldonkey/src/states/client-stats.dart';
 import 'package:mldonkey/src/states/file-state.dart';
+import 'package:mldonkey/src/states/file-format.dart';
+import 'package:mldonkey/src/states/file-info.dart';
+import 'package:mldonkey/src/states/subfile.dart';
+import 'package:mldonkey/src/states/comment.dart';
 
 import 'package:mldonkey/src/types/gui-string.dart';
 import 'package:mldonkey/src/types/gui-list.dart';
 import 'package:mldonkey/src/types/gui-file-state.dart';
+import 'package:mldonkey/src/types/gui-file-format.dart';
 import 'package:mldonkey/src/types/op-codes.dart';
 
 class Client {
@@ -58,28 +63,37 @@ class Client {
     this._socket = sock;
   }
 
+  List<int> _buffer = null;
   void _handleMsg(List<int> data) {
-    ByteArrayReader msg = new ByteArrayReader(data, Endianness.LITTLE_ENDIAN);
+    if (this._buffer == null) this._buffer = [];
+    this._buffer.addAll(data);
+
+    ByteArrayReader msg = new ByteArrayReader(_buffer, Endianness.LITTLE_ENDIAN);
 
     int size = msg.readInt32();
-    int opcode = msg.readInt16();
 
-    switch (opcode) {
-      case RecvOpCode.CoreProtocol:
-        this._handleMsgCoreProtocol(msg);
-        break;
-      case RecvOpCode.NetworkInfo:
-        this._handleMsgNetworkInfo(msg);
-        break;
-      case RecvOpCode.ClientStats:
-        this._handleMsgClientStats(msg);
-        break;
-      case RecvOpCode.FileInfo:
-        this._handleMsgFileInfo(msg);
-        break;
-      default:
-        print(opcode);
-        this._handleMsgUnknown(msg);
+    if (size <= msg.length) {
+      int opcode = msg.readInt16();
+
+      switch (opcode) {
+        case RecvOpCode.CoreProtocol:
+          this._handleMsgCoreProtocol(msg);
+          break;
+        case RecvOpCode.NetworkInfo:
+          this._handleMsgNetworkInfo(msg);
+          break;
+        case RecvOpCode.ClientStats:
+          this._handleMsgClientStats(msg);
+          break;
+        case RecvOpCode.FileInfo:
+          this._handleMsgFileInfo(msg);
+          break;
+        default:
+          print(opcode);
+          this._handleMsgUnknown(msg);
+      }
+
+      this._buffer = null;
     }
   }
 
@@ -148,6 +162,8 @@ class Client {
   }
 
   Future _handleMsgFileInfo(ByteArrayReader data) async {
+    int now = (new DateTime.now()).millisecondsSinceEpoch;
+
     int fileid = data.readInt32();
     int netid = data.readInt32();
     List<String> names = GuiList.readStrings(data);
@@ -162,9 +178,47 @@ class Client {
     double downloadSpeed = GuiString.readFloat(data);
     List<int> chunkAges = GuiList.readInt32(data);
     int fileAge = data.readInt32();
-    print("Descarga: ${names.first} (${md4})");
-    print("Tamaño: (${downloaded}) ${size} \tSources: ${sources} \tAge: ${fileAge}");
-    print(size);
+    FileFormat format = GuiFileFormat.read(data);
+    String preferredName = GuiString.read(data);
+    int lastSeen = data.readInt32();
+    int priority = data.readInt32();
+    String comment = GuiString.read(data);
+    List<String> links = GuiList.readStrings(data);
+    List<Subfile> subfiles = GuiList.readSubfiles(data);
+
+    List<Comment> fileComments = [ new Comment(2130706433, 0, "", 0, comment) ];
+
+    if (this._rProtocolVersion > 40) {
+      String fileFormat = GuiString.read(data);
+      fileComments.addAll(GuiList.readComments(data));
+      String fileUser = GuiString.read(data);
+      String fileGroup = GuiString.read(data);
+    }
+
+
+    FileInfo finfo = new FileInfo(
+      id: fileid,
+      networkId: netid,
+      name: preferredName.length > 0 ? preferredName : names.first,
+      otherNames: names,
+      hashes: { "md4": md4 },
+      links: links,
+      size: size,
+      downloaded: downloaded,
+      sources: sources,
+      clients: clients,
+      state: state,
+      priority: priority,
+      format: format,
+      created: new DateTime.fromMillisecondsSinceEpoch(now - fileAge),
+      lastSeen: new DateTime.fromMillisecondsSinceEpoch(now - lastSeen),
+      comments: fileComments,
+      subfiles: subfiles
+    );
+
+    print(finfo);
+    print("WTF: ${data.readInt32()} ${data.readInt16()}");
+    _handleMsgFileInfo(data);
   }
 
   void _handleMsgUnknown(ByteArrayReader data) {

@@ -38,7 +38,8 @@ class GuiString {
   static String read(ByteArrayReader data) {
     int size = data.readInt16(Endianness.LITTLE_ENDIAN);
     if (size == 0xffff) size = data.readInt32(Endianness.LITTLE_ENDIAN);
-    return data.readString(size, UTF8);
+    if (size > 0) return data.readString(size, UTF8);
+    else return "";
   }
 
   static double readFloat(ByteArrayReader data) {
