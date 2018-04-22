@@ -23,31 +23,9 @@ class GuiList {
     return read<int>(data, (data) => data.readInt16(Endianness.LITTLE_ENDIAN));
   }
 
-  /*static List<int> readInt16(ByteArrayReader data) {
-    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
-    List<int> toret = new List<int>();
-
-    for (int i = 0; i < size; i++) {
-      toret.add(data.readInt16(Endianness.LITTLE_ENDIAN));
-    }
-
-    return toret;
-  }*/
-
   static List<int> readInt32(ByteArrayReader data) {
     return read<int>(data, (data) => data.readInt32(Endianness.LITTLE_ENDIAN));
   }
-
-  /*static List<int> readInt32(ByteArrayReader data) {
-    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
-    List<int> toret = new List<int>();
-
-    for (int i = 0; i < size; i++) {
-      toret.add(data.readInt32(Endianness.LITTLE_ENDIAN));
-    }
-
-    return toret;
-  }*/
 
   static Map<int, int> readMapInt32(ByteArrayReader data) {
     int size = data.readInt16(Endianness.LITTLE_ENDIAN);
@@ -75,20 +53,48 @@ class GuiList {
     return toret;
   }
 
-  static List<String> readStrings(ByteArrayReader data) {
-    return read<String>(data, (data) => GuiString.read(data));
-  }
-
-  /*static List<String> readStrings(ByteArrayReader data) {
+  static Map<String, String> readMapStringString(ByteArrayReader data) {
     int size = data.readInt16(Endianness.LITTLE_ENDIAN);
-    List<String> toret = [];
+    Map<String, String> toret = {};
 
     for (int i = 0; i < size; i++) {
-      toret.add(GuiString.read(data));
+      String key = GuiString.read(data);
+      String val = GuiString.read(data);
+      toret[key] = val;
     }
 
     return toret;
-  }*/
+  }
+
+  static Map<String, Object> readTags(ByteArrayReader data) {
+    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
+    Map<String, Object> toret = {};
+
+    for (int i = 0; i < size; i++) {
+      String key = GuiString.read(data);
+      int type = data.readInt8();
+      Object val = null;
+
+      switch (type) {
+        case 0: val = data.readUint32(); break;
+        case 1: val = data.readInt32(); break;
+        case 2: val = GuiString.read(data); break;
+        case 3: val = data.readInt32(); break;
+        case 4: val = data.readInt16(); break;
+        case 5: val = data.readInt8(); break;
+        case 6: val = data.readInt64(); break;
+        default: throw new TypeError();
+      }
+
+      toret[key] = val;
+    }
+
+    return toret;
+  }
+
+  static List<String> readStrings(ByteArrayReader data) {
+    return read<String>(data, (data) => GuiString.read(data));
+  }
 
   static List<Subfile> readSubfiles(ByteArrayReader data) {
     return read<Subfile>(data, (data) {
