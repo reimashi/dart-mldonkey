@@ -6,9 +6,9 @@ class ByteArrayReader {
   final List<int> _data;
   int _position;
 
-  final Endianness endian;
+  final Endian endian;
 
-  ByteArrayReader(List<int> data, [Endianness endian = Endianness.BIG_ENDIAN])
+  ByteArrayReader(List<int> data, [Endian endian = Endian.big])
       : this._data = data,
         this.endian = endian,
         this._position = 0;
@@ -68,7 +68,7 @@ class ByteArrayReader {
   int readUint8() => read();
 
   /// Read a 2 bytes int
-  int readInt16([Endianness endian = null]) {
+  int readInt16([Endian endian = null]) {
     if (endian == null) endian = this.endian;
     Uint8List li = new Uint8List.fromList(readBytes(2));
     ByteData bd = li.buffer.asByteData();
@@ -76,7 +76,7 @@ class ByteArrayReader {
   }
 
   /// Read a 2 bytes unsigned int
-  int readUint16([Endianness endian = null]) {
+  int readUint16([Endian endian = null]) {
     if (endian == null) endian = this.endian;
     Uint8List li = new Uint8List.fromList(readBytes(2));
     ByteData bd = li.buffer.asByteData();
@@ -84,7 +84,7 @@ class ByteArrayReader {
   }
 
   /// Read a 4 bytes int
-  int readInt32([Endianness endian = null]) {
+  int readInt32([Endian endian = null]) {
     if (endian == null) endian = this.endian;
     Uint8List li = new Uint8List.fromList(readBytes(4));
     ByteData bd = li.buffer.asByteData();
@@ -92,7 +92,7 @@ class ByteArrayReader {
   }
 
   /// Read a 4 bytes unsigned int
-  int readUint32([Endianness endian = null]) {
+  int readUint32([Endian endian = null]) {
     if (endian == null) endian = this.endian;
     Uint8List li = new Uint8List.fromList(readBytes(4));
     ByteData bd = li.buffer.asByteData();
@@ -100,7 +100,7 @@ class ByteArrayReader {
   }
 
   /// Read a 8 bytes int
-  int readInt64([Endianness endian = null]) {
+  int readInt64([Endian endian = null]) {
     if (endian == null) endian = this.endian;
     Uint8List li = new Uint8List.fromList(readBytes(8));
     ByteData bd = li.buffer.asByteData();
@@ -108,7 +108,7 @@ class ByteArrayReader {
   }
 
   /// Read a 8 bytes unsigned int
-  int readUint64([Endianness endian = null]) {
+  int readUint64([Endian endian = null]) {
     if (endian == null) endian = this.endian;
     Uint8List li = new Uint8List.fromList(readBytes(8));
     ByteData bd = li.buffer.asByteData();
@@ -116,7 +116,7 @@ class ByteArrayReader {
   }
 
   /// Read a 4 bytes float
-  double readFloat32([Endianness endian = null]) {
+  double readFloat32([Endian endian = null]) {
     if (endian == null) endian = this.endian;
     Uint8List li = new Uint8List.fromList(readBytes(8));
     ByteData bd = li.buffer.asByteData();
@@ -124,7 +124,7 @@ class ByteArrayReader {
   }
 
   /// Read a 8 bytes float
-  double readFloat64([Endianness endian = null]) {
+  double readFloat64([Endian endian = null]) {
     if (endian == null) endian = this.endian;
     Uint8List li = new Uint8List.fromList(readBytes(8));
     ByteData bd = li.buffer.asByteData();
@@ -132,7 +132,7 @@ class ByteArrayReader {
   }
 
   /// Read a string of [size]
-  String readString(int size, [Encoding encoding = UTF8]) {
+  String readString(int size, [Encoding encoding = utf8]) {
     return encoding.decode(this.readBytes(size));
   }
 
@@ -142,7 +142,7 @@ class ByteArrayReader {
     if (hexadecimal)
       return _toHexString();
     else
-      return UTF8.decode(this._data);
+      return utf8.decode(this._data);
   }
 
   /// Convert the byte array to a hexadecimal string

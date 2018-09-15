@@ -7,7 +7,7 @@ main() async {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  Client pc = await Client.connect("vega", 4001);
+  Client pc = await Client.connect("localhost", 4001);
 
   pc.onStatsUpdate.listen((stats) {
     print("Stats: ${stats.downloadRate / 1024} - ${stats.uploadRate / 1024} kbps");

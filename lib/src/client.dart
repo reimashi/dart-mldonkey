@@ -123,7 +123,7 @@ class Client {
 
   void _parseMsg(List<int> data) {
     ByteArrayReader buffer =
-        new ByteArrayReader(data, Endianness.LITTLE_ENDIAN);
+        new ByteArrayReader(data, Endian.little);
 
     int msgSize = buffer.readInt32();
 
@@ -131,7 +131,7 @@ class Client {
     if (msgSize <= buffer.length) {
       List<int> msgData = buffer.readBytes(msgSize);
       ByteArrayReader msgReader =
-          new ByteArrayReader(msgData, Endianness.LITTLE_ENDIAN);
+          new ByteArrayReader(msgData, Endian.little);
 
       //print("Size: ${msgReader.length}");
       int opcode = msgReader.readInt16();
@@ -426,7 +426,7 @@ class Client {
   Future _sendMsgProtocolVersion() async {
     Uint8List headRaw = new Uint8List(4);
     ByteData head = headRaw.buffer.asByteData();
-    head.setInt32(0, PROTOCOL_VERSION, Endianness.LITTLE_ENDIAN);
+    head.setInt32(0, PROTOCOL_VERSION, Endian.little);
 
     return this._sendMsg(SendOpCode.ProtocolVersion, headRaw);
   }
@@ -447,8 +447,8 @@ class Client {
     Uint8List headRaw = new Uint8List(6);
     ByteData head = headRaw.buffer.asByteData();
 
-    head.setInt32(0, content.length + 2, Endianness.LITTLE_ENDIAN);
-    head.setInt16(4, opcode, Endianness.LITTLE_ENDIAN);
+    head.setInt32(0, content.length + 2, Endian.little);
+    head.setInt16(4, opcode, Endian.little);
 
     List<int> msg = new List.from(headRaw)..addAll(content);
 

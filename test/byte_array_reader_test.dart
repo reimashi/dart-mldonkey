@@ -22,7 +22,7 @@ void main() {
     ByteArrayReader data;
 
     setUp(() {
-      data = new ByteArrayReader([0x80, 1, 0, 1]..addAll(UTF8.encode(totest)));
+      data = new ByteArrayReader([0x80, 1, 0, 1]..addAll(utf8.encode(totest)));
     });
 
     test('Int8', () {

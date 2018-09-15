@@ -9,7 +9,7 @@ typedef T ListParser<T>(ByteArrayReader data);
 
 class GuiList {
   static List<T> read<T>(ByteArrayReader data, ListParser<T> parser) {
-    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
+    int size = data.readInt16(Endian.little);
     List<T> toret = new List<T>();
 
     for (int i = 0; i < size; i++) {
@@ -20,20 +20,20 @@ class GuiList {
   }
 
   static List<int> readInt16(ByteArrayReader data) {
-    return read<int>(data, (data) => data.readInt16(Endianness.LITTLE_ENDIAN));
+    return read<int>(data, (data) => data.readInt16(Endian.little));
   }
 
   static List<int> readInt32(ByteArrayReader data) {
-    return read<int>(data, (data) => data.readInt32(Endianness.LITTLE_ENDIAN));
+    return read<int>(data, (data) => data.readInt32(Endian.little));
   }
 
   static Map<int, int> readMapInt32(ByteArrayReader data) {
-    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
+    int size = data.readInt16(Endian.little);
     Map<int, int> toret = {};
 
     for (int i = 0; i < size; i++) {
-      int key = data.readInt32(Endianness.LITTLE_ENDIAN);
-      int val = data.readInt32(Endianness.LITTLE_ENDIAN);
+      int key = data.readInt32(Endian.little);
+      int val = data.readInt32(Endian.little);
       toret[key] = val;
     }
 
@@ -41,11 +41,11 @@ class GuiList {
   }
 
   static Map<int, String> readMapInt32String(ByteArrayReader data) {
-    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
+    int size = data.readInt16(Endian.little);
     Map<int, String> toret = {};
 
     for (int i = 0; i < size; i++) {
-      int key = data.readInt32(Endianness.LITTLE_ENDIAN);
+      int key = data.readInt32(Endian.little);
       String val = GuiString.read(data);
       toret[key] = val;
     }
@@ -54,7 +54,7 @@ class GuiList {
   }
 
   static Map<String, String> readMapStringString(ByteArrayReader data) {
-    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
+    int size = data.readInt16(Endian.little);
     Map<String, String> toret = {};
 
     for (int i = 0; i < size; i++) {
@@ -67,7 +67,7 @@ class GuiList {
   }
 
   static Map<String, Object> readTags(ByteArrayReader data) {
-    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
+    int size = data.readInt16(Endian.little);
     Map<String, Object> toret = {};
 
     for (int i = 0; i < size; i++) {
@@ -100,7 +100,7 @@ class GuiList {
     return read<Subfile>(data, (data) {
       return new Subfile(
           GuiString.read(data),
-          new Size(data.readInt64(Endianness.LITTLE_ENDIAN)),
+          new Size(data.readInt64(Endian.little)),
           GuiString.read(data));
     });
   }
@@ -108,7 +108,7 @@ class GuiList {
   static List<Comment> readComments(ByteArrayReader data) {
     return read<Comment>(data, (data) {
       return new Comment(
-          data.readInt32(Endianness.LITTLE_ENDIAN),
+          data.readInt32(Endian.little),
           data.readInt8(),
           GuiString.read(data),
           data.readInt8(),

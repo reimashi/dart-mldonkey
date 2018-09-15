@@ -17,28 +17,28 @@ class GuiString {
       ByteData head = headRaw.buffer.asByteData();
 
       head.setInt16(0, source.length > 0xffff ? 0xffff : source.length,
-          Endianness.LITTLE_ENDIAN);
+          Endian.little);
       head.setInt32(2, source.length > 0xffff ? source.length : 0x00,
-          Endianness.LITTLE_ENDIAN);
+          Endian.little);
     }
     else {
       headRaw = new Uint8List(2);
       ByteData head = headRaw.buffer.asByteData();
 
       head.setInt16(0, source.length > 0xffff ? 0xffff : source.length,
-          Endianness.LITTLE_ENDIAN);
+          Endian.little);
     }
 
     return new List.from(headRaw)
-      ..addAll(UTF8.encode(source));
+      ..addAll(utf8.encode(source));
   }
 
   String toString() => this._str;
 
   static String read(ByteArrayReader data) {
-    int size = data.readInt16(Endianness.LITTLE_ENDIAN);
-    if (size == 0xffff) size = data.readInt32(Endianness.LITTLE_ENDIAN);
-    if (size > 0) return data.readString(size, UTF8);
+    int size = data.readInt16(Endian.little);
+    if (size == 0xffff) size = data.readInt32(Endian.little);
+    if (size > 0) return data.readString(size, utf8);
     else return "";
   }
 

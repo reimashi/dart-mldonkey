@@ -5,12 +5,12 @@ homepage: https://github.com/reimashi/dart-mldonkey
 author: Aitor González Fernández <reimashi@gmail.com>
 
 environment:
-  sdk: '>=1.20.1 <2.0.0'
+  sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
   logging: ^0.11.3
   size_type:
-    git: https://github.com/minerhub/dart-size-type.git
+    git: https://github.com/TokkennoDart/dart-size-type.git
 
 dev_dependencies:
-  test: ^0.12.0
+  test: ^1.3.2
